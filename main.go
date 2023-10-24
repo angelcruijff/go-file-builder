@@ -3,33 +3,30 @@ package main
 import (
 	"fmt"
 	"os"
-	"text/template"
 )
 
 func main() {
 	// Parse command-line flags
-	fileName, newFile, strictMode := parseFlags()
+	flags := ParseFlags()
+	// Access individual flag values
+	fileName := flags.FileName
+	newFile := flags.NewFileName
+	strictMode := flags.StrictMode
 
 	// Read the template file
-	templateContent, err := readTemplateFile(fileName)
-	if err != nil {
-		handleError(err)
-	}
-
-	// Create a new template
-	tmpl, err := template.New("myTemplate").Parse(templateContent)
+	templateContent, err := ReadTemplateFile(fileName)
 	if err != nil {
 		handleError(err)
 	}
 
 	// Extract variables from the template
-	variables := extractVariables(templateContent)
+	variables := ExtractVariables(templateContent)
 
 	// Create a data map with values from environment variables
 	data := createDataMap(variables, strictMode)
 
 	// Execute the template
-	err = executeTemplate(tmpl, data, newFile)
+	err = ExecuteTemplate(templateContent, data, newFile)
 	if err != nil {
 		handleError(err)
 	}

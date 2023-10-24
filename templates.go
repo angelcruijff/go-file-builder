@@ -1,8 +1,7 @@
-// template.go
 package main
 
 import (
-	"bytes"
+	"fmt"
 	"os"
 	"text/template"
 )
@@ -16,17 +15,44 @@ func ReadTemplateFile(fileName string) (string, error) {
 	return string(content), nil
 }
 
-func ExecuteTemplate(templateContent string, data interface{}) (string, error) {
+func ExecuteTemplate(templateContent string, data interface{}, newFile string) error {
+	print_file := false
 	tmpl, err := template.New("myTemplate").Parse(templateContent)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	var outputBuffer bytes.Buffer // Use a buffer to capture the output
-	err = tmpl.Execute(&outputBuffer, data)
-	if err != nil {
-		return "", err
+	if newFile == "" {
+		//If the new_file parameter is not given, output the final file to the OS Output
+		print_file = true
 	}
 
-	return outputBuffer.String(), nil // Convert the buffer to a string
+	if print_file {
+		err = tmpl.Execute(os.Stdout, data)
+	} else {
+		created_file, err := os.Create(newFile)
+		if err != nil {
+			panic(err)
+		}
+		defer created_file.Close()
+		err = tmpl.Execute(created_file, data)
+		return err
+	}
+
+	return err // Convert the buffer to a string
+}
+
+func createDataMap(variables []string, strictMode bool) map[string]string {
+	data := make(map[string]string)
+
+	for _, variable := range variables {
+		value, varPresent := os.LookupEnv(variable)
+		if varPresent {
+			data[variable] = value
+		} else if strictMode {
+			handleError(fmt.Errorf("The variable '%s' is not set", variable))
+		}
+	}
+
+	return data
 }

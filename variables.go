@@ -1,4 +1,3 @@
-// variables.go
 package main
 
 import (

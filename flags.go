@@ -1,6 +1,3 @@
-// flags.go
-// Package flags provides functionality for handling command-line flags.
-
 package main
 
 import "flag"
